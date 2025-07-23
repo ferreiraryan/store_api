@@ -37,14 +37,16 @@ class ProductUsecase:
     async def query(self) -> List[ProductOut]:
         return [ProductOut(**item) async for item in self.collection.find()]
 
-    async def update(self, id: UUID, body: ProductUpdate) -> ProductUpdateOut:
+    async def update(self, id: UUID, body: ProductUpdate) -> ProductOut:
+        await self.get(id=id)
+
         result = await self.collection.find_one_and_update(
             filter={"id": id},
             update={"$set": body.model_dump(exclude_none=True)},
             return_document=pymongo.ReturnDocument.AFTER,
         )
 
-        return ProductUpdateOut(**result)
+        return ProductOut(**result)
 
     async def delete(self, id: UUID) -> bool:
         product = await self.collection.find_one({"id": id})
