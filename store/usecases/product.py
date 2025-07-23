@@ -1,10 +1,11 @@
+from datetime import datetime, timezone
 from typing import List
 from uuid import UUID
 
 import pymongo
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo.errors import PyMongoError
-from datetime import datetime, timezone
+
 from store.core.exceptions import DatabaseError, NotFoundException
 from store.db.mongo import db_client
 from store.models.product import ProductModel
@@ -34,10 +35,28 @@ class ProductUsecase:
 
         return ProductOut(**result)
 
-    async def query(self) -> List[ProductOut]:
-        return [ProductOut(**item) async for item in self.collection.find()]
+    async def query(
+        self, min_price: float = None, max_price: float = None
+    ) -> List[ProductOut]:
+        filter_query = {}
+        price_filter = {}
 
-    async def update(self, id: UUID, body: ProductUpdate) -> ProductOut:
+        if min_price is not None:
+            price_filter["$gt"] = min_price
+
+        if max_price is not None:
+            price_filter["$lt"] = max_price
+
+        if price_filter:
+            filter_query["price"] = price_filter
+
+        products = []
+        async for product in self.collection.find(filter_query):
+            products.append(ProductOut(**product))
+
+        return products
+
+    async def update(self, id: UUID, body: ProductUpdate) -> ProductUpdateOut:
         await self.get(id=id)
 
         update_data = body.model_dump(exclude_unset=True)
@@ -51,7 +70,7 @@ class ProductUsecase:
             return_document=pymongo.ReturnDocument.AFTER,
         )
 
-        return ProductOut(**result)
+        return ProductUpdateOut(**result)
 
     async def delete(self, id: UUID) -> bool:
         product = await self.collection.find_one({"id": id})
