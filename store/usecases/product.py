@@ -1,11 +1,14 @@
 from typing import List
 from uuid import UUID
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
 import pymongo
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from pymongo.errors import PyMongoError
+
+from store.core.exceptions import DatabaseError, NotFoundException
 from store.db.mongo import db_client
 from store.models.product import ProductModel
 from store.schemas.product import ProductIn, ProductOut, ProductUpdate, ProductUpdateOut
-from store.core.exceptions import NotFoundException
 
 
 class ProductUsecase:
@@ -16,7 +19,10 @@ class ProductUsecase:
 
     async def create(self, body: ProductIn) -> ProductOut:
         product_model = ProductModel(**body.model_dump())
-        await self.collection.insert_one(product_model.model_dump())
+        try:
+            await self.collection.insert_one(product_model.model_dump())
+        except PyMongoError as e:
+            raise DatabaseError(message=f"Error inserting product in database: {e}")
 
         return ProductOut(**product_model.model_dump())
 
