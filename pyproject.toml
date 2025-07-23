@@ -2,8 +2,9 @@
 name = "tdd project"
 version = "0.0.1"
 description = ""
-authors = ["Nayanna Nara <nayanna501@gmail.com>"]
+authors = ["Ryan Ferreira <ryanferreira4883@gmail.com>"]
 readme = "README.md"
+package-mode = false 
 
 [tool.poetry.dependencies]
 python = "^3.12"

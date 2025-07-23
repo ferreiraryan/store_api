@@ -1,13 +1,16 @@
+# Como precisa ficar:
 from motor.motor_asyncio import AsyncIOMotorClient
-
 from store.core.config import settings
 
 
 class MongoClient:
     def __init__(self) -> None:
-        self.client: AsyncIOMotorClient = AsyncIOMotorClient(settings.DATABASE_URL)
+        self.client = AsyncIOMotorClient(
+            settings.DATABASE_URL,
+            uuidRepresentation="standard",  # <--- ADICIONE ISSO AQUI
+        )
 
-    def get(self) -> AsyncIOMotorClient:
+    def get(self):
         return self.client
 
 

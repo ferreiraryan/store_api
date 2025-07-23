@@ -1,6 +1,17 @@
+# tests/conftest.py
+
+# --- INÍCIO DA CORREÇÃO ---
+import os
+from dotenv import load_dotenv
+
+# Garante que as variáveis de ambiente de teste sejam carregadas ANTES de tudo
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env.test"))
+# --- FIM DA CORREÇÃO ---
+
+
+# Agora o resto do seu arquivo pode vir normalmente
 import pytest
 import asyncio
-
 from uuid import UUID
 from store.db.mongo import db_client
 from store.schemas.product import ProductIn, ProductUpdate
